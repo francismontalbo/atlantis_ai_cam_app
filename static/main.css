@@ -1,0 +1,14 @@
+html, body {
+    height: 100%;
+}
+
+.footer {
+    width: 100%;
+}
+
+.time-section {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}

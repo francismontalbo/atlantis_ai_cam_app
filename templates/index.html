@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATLANTIS AI Camera</title>
+    <link href="{{ url_for('static', filename='tailwind.min.css') }}" rel="stylesheet">
+</head>
+<body class="flex flex-col min-h-screen bg-blue-900 text-white">
+    <div class="content flex flex-col items-center justify-center flex-1">
+        <h1 class="text-4xl font-bold mb-8">ATLANTIS AI Camera</h1>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div class="rounded-lg overflow-hidden shadow-lg bg-blue-700">
+                <h2 class="text-2xl font-semibold p-4 bg-green-500">Plant Cam</h2>
+                <img src="{{ url_for('plant_cam_feed') }}" alt="Plant Cam" class="w-full">
+            </div>
+            <div class="rounded-lg overflow-hidden shadow-lg bg-green-700">
+                <h2 class="text-2xl font-semibold p-4 bg-blue-500">Fish Cam</h2>
+                <img src="{{ url_for('fish_cam_feed') }}" alt="Fish Cam" class="w-full">
+            </div>
+        </div>
+    </div>
+    <footer class="footer bg-gray-900 text-white text-center py-4">
+        <div class="container mx-auto">
+            <p>&copy; 2024 Project ATLANTIS. All Rights Reserved.</p>
+        </div>
+    </footer>
+    <div class="time-section bg-gray-900 text-white py-4">
+        <div class="container mx-auto">
+            <p class="text-lg">Current Time: <span id="current-time"></span></p>
+            <p class="text-lg">Date: <span id="current-date"></span></p>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
