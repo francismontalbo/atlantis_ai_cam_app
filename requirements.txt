@@ -1,2 +1,4 @@
 flask
 opencv-python
+torch
+torchvision
