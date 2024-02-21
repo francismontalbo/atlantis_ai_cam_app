@@ -5,6 +5,7 @@
 - [ ] **Train the MobileNetV3 model**: Fine-tune the MobileNetV3 model with curated data to achieve unparalleled accuracy in species detection.
 - [ ] **Deploy the app in the webserver**: Ensure seamless accessibility to our app on any device, anywhere in the world.
 - [ ] **Perform test via internet**: Conduct rigorous testing to guarantee reliability and performance over diverse network conditions.
+- [ ] **Add sound FX for responses and actions**: The app should emit a sound via browser to give the user more attention to what is happening.
 - [x] **Build the app for local network**: Create a robust version of the app that operates seamlessly within local networks, ensuring functionality even in remote field locations.
 - [x] **Enable network detection boxes in the browser**: Implement real-time detection boxes directly in the browser, allowing users to visualize and analyze aquatic life with ease.
 

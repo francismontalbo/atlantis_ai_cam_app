@@ -1,4 +1,6 @@
 flask
+flask-socketio
 opencv-python
 torch
 torchvision
+pygame
