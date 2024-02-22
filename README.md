@@ -2,8 +2,10 @@
 
 Welcome to the Project ATLANTIS Real-time Monitoring App repository! This application is designed to revolutionize aquatic life monitoring with its cutting-edge features.
 
-## Tasks
+## Status
+![Project Status](https://img.shields.io/badge/Project%20Status-Alpha%201.0.0.0-red)
 
+## Tasks 
 Here are the tasks we're currently working on:
 
 - [ ] **Train the MobileNetV3 model**: Fine-tune the MobileNetV3 model with curated data to achieve unparalleled accuracy in species detection.
