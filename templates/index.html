@@ -3,35 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLANTIS AI Camera</title>
+    <title>ATLANTIS 🧠🎥</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@700italic&display=swap" rel="stylesheet">
     <link href="{{ url_for('static', filename='tailwind.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-sx3VlkkD7P3I8NPJw8nhbVFvCfLwIkuY85Y7hFPI65tGFGyYFgMLbd9tXyZ8DDFfzVK/ALMplOukzDp9SK+z7w==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js" integrity="sha512-w6HsJ7ohHe2kbg8ybAZfHXDslJZwEw20UboU9Qiy4ODBB0N0RLE7zVxbq5QmL2OcUO/wqEz+EtUu6DpSJX39jg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
-<body class="flex flex-col min-h-screen bg-blue-900 text-white">
-    <div class="content flex flex-col items-center justify-center flex-1">
-        <h1 class="text-4xl font-bold mb-8">ATLANTIS AI Camera</h1>
+<body class="flex flex-col min-h-screen bg-gradient-to-b from-blue-900 to-blue-800 text-white">
+    <header class="bg-green-500 py-4 mb-4 text-center">
+        <h1 class="text-4xl font-bold">
+            <span class="font-bold">ATLANTIS</span><span class="text-yellow-500">🐠🌱</span>
+        </h1>
+    </header>
+    <main class="content flex flex-col items-center justify-center flex-1">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            <div class="rounded-lg overflow-hidden shadow-lg bg-blue-700">
-                <h2 class="text-2xl font-semibold p-4 bg-green-500">Plant Cam</h2>
-                <img src="{{ url_for('plant_cam_feed') }}" alt="Plant Cam" class="w-full">
+            <div class="camera-container bg-gradient-to-br from-green-400 to-green-600 border-4 border-green-800 text-center">
+                <h2 class="camera-title text-2xl font-semibold p-4 bg-green-800">Plant Cam 🌱</h2>
+                <img src="{{ url_for('plant_cam_feed') }}" alt="Plant Cam" class="camera-image w-full">
             </div>
-            <div class="rounded-lg overflow-hidden shadow-lg bg-green-700">
-                <h2 class="text-2xl font-semibold p-4 bg-blue-500">Fish Cam</h2>
-                <img src="{{ url_for('fish_cam_feed') }}" alt="Fish Cam" class="w-full">
+            <div class="camera-container bg-gradient-to-br from-blue-400 to-blue-600 border-4 border-blue-800 text-center">
+                <h2 class="camera-title text-2xl font-semibold p-4 bg-blue-800">Fish Cam 🐠</h2>
+                <img src="{{ url_for('fish_cam_feed') }}" alt="Fish Cam" class="camera-image w-full">
             </div>
         </div>
-    </div>
-    <footer class="footer bg-gray-900 text-white text-center py-4">
-        <div class="container mx-auto">
-            <p>&copy; 2024 Project ATLANTIS. All Rights Reserved.</p>
-        </div>
-    </footer>
-    <div class="time-section bg-gray-900 text-white py-4">
-        <div class="container mx-auto">
+    </main>
+    <div class="time-section bg-gradient-to-t from-transparent to-transparent text-white py-4">
+        <div class="container mx-auto text-center">
             <p class="text-lg">Current Time: <span id="current-time"></span></p>
             <p class="text-lg">Date: <span id="current-date"></span></p>
         </div>
     </div>
+    <footer class="footer bg-gradient-to-t from-indigo-900 to-blue-800 text-white text-center py-4 mt-auto">
+        <div class="container mx-auto">
+            <span>&copy; 2024 Project ATLANTIS. All Rights Reserved.</span>
+            <div class="flex justify-center mt-4">
+                <a href="#" class="text-xl mx-4"><i class="fa fa-facebook"></i></a>
+                <a href="#" class="text-xl mx-4"><i class="fa fa-instagram"></i></a>
+                <a href="#" class="text-xl mx-4"><i class="fa fa-linkedin"></i></a>
+            </div>
+        </div>
+    </footer>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
