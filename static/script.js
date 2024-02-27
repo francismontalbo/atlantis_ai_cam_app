@@ -18,16 +18,27 @@ document.addEventListener("DOMContentLoaded", function() {
                 console.error('Error fetching time:', error);
             });
     }
-    
+
     function playSound(soundType) {
         var audio = new Audio("/play_sound/" + soundType);
         audio.play();
     }
-    
-    updateTime(); 
+
+    updateTime();
     setInterval(updateTime, 1000);
 
     var socket = io();
+
+    socket.on('video_feed', function(data) {
+        const { frame, camera_index } = JSON.parse(data);
+        const canvas = document.getElementById('cam-' + camera_index);
+        const ctx = canvas.getContext('2d');
+        const image = new Image();
+        image.onload = function() {
+            ctx.drawImage(image, 0, 0);
+        };
+        image.src = 'data:image/png;base64,' + frame;
+    })
 
     socket.on('play_sound', function(data) {
         playSound(data.sound_url);

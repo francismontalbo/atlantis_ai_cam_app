@@ -8,7 +8,7 @@
     <link href="{{ url_for('static', filename='tailwind.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-sx3VlkkD7P3I8NPJw8nhbVFvCfLwIkuY85Y7hFPI65tGFGyYFgMLbd9tXyZ8DDFfzVK/ALMplOukzDp9SK+z7w==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js" integrity="sha512-w6HsJ7ohHe2kbg8ybAZfHXDslJZwEw20UboU9Qiy4ODBB0N0RLE7zVxbq5QmL2OcUO/wqEz+EtUu6DpSJX39jg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js" integrity="sha384-Gr6Lu2Ajx28mzwyVR8CFkULdCU7kMlZ9UthllibdOSo6qAiN+yXNHqtgdTvFXMT4" crossorigin="anonymous"></script>
 </head>
 <body class="flex flex-col min-h-screen bg-gradient-to-b from-blue-900 to-blue-800 text-white">
     <header class="bg-green-500 py-4 mb-4 text-center">
@@ -20,11 +20,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
             <div class="camera-container bg-gradient-to-br from-green-400 to-green-600 border-4 border-green-800 text-center">
                 <h2 class="camera-title text-2xl font-semibold p-4 bg-green-800">Plant Cam 🌱</h2>
-                <img src="{{ url_for('plant_cam_feed') }}" alt="Plant Cam" class="camera-image w-full">
+                <canvas src id="cam-0" alt="Plant Cam" class="camera-image w-full" width="320" height="320"></canvas>
             </div>
             <div class="camera-container bg-gradient-to-br from-blue-400 to-blue-600 border-4 border-blue-800 text-center">
                 <h2 class="camera-title text-2xl font-semibold p-4 bg-blue-800">Fish Cam 🐠</h2>
-                <img src="{{ url_for('fish_cam_feed') }}" alt="Fish Cam" class="camera-image w-full">
+                <canvas src id="cam-1" alt="Plant Cam" class="camera-image w-full" width="320" height="320"></canvas>
             </div>
         </div>
     </main>
