@@ -202,7 +202,7 @@ def video_feed(camera: cv2.VideoCapture, camera_index: int, sio: socketio.Simple
 
 with socketio.SimpleClient() as sio:
     print("Connecting to server")
-    sio.connect("http://192.168.1.106:8000")
+    sio.connect("http://122.53.28.51:8000")
     print("Connected, starting feed")
     video_feed(plant_cam, PLANT_CAM_INDEX, sio)
     print("Feed stopped")
