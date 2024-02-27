@@ -3,13 +3,14 @@
 Welcome to the Project ATLANTIS Real-time Monitoring App repository! This application is designed to revolutionize aquatic life monitoring with its cutting-edge features.
 
 ## Status
-![Project Status](https://img.shields.io/badge/Project%20Status-Alpha%201.0.0.0-red)
+![Project Status](https://img.shields.io/badge/Project%20Status-Alpha%201.0.1.0-red)
 
 ## Tasks 
 Here are the tasks we're currently working on:
+Percentage: ≈42%
 
 - [ ] **Train the MobileNetV3 model**: Fine-tune the MobileNetV3 model with curated data to achieve unparalleled accuracy in species detection.
-- [ ] **Deploy the app in the webserver**: Ensure seamless accessibility to our app on any device, anywhere in the world.
+- [x] **Deploy the app in the webserver**: Ensure seamless accessibility to our app on any device, anywhere in the world.
 - [ ] **Perform tests via the internet**: Conduct rigorous testing to guarantee reliability and performance over diverse network conditions.
 - [ ] **Add sound FX for responses and actions**: Enhance user experience by implementing sound effects in the browser to draw attention to important actions and alerts.
 - [ ] **Visualize line graph with date**: Develop a feature to visualize the count of sick plants over time, aiding farmers in monitoring the prevalence of sick plants.
