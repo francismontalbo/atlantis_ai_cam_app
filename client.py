@@ -27,6 +27,7 @@ fish_cam_counter = 0
 
 last_played_time_plant = time.time()
 last_played_time_fish = time.time()
+connectedClient = []
 
 
 def initialize_camera(
@@ -200,9 +201,29 @@ def video_feed(camera: cv2.VideoCapture, camera_index: int, sio: socketio.Simple
         })
 
 
+
 with socketio.SimpleClient() as sio:
     print("Connecting to server")
     sio.connect("http://122.53.28.51:8000")
     print("Connected, starting feed")
     video_feed(plant_cam, PLANT_CAM_INDEX, sio)
     print("Feed stopped")
+
+sio2 = sio.client
+sio2.connect("http://122.53.28.51:8200")
+
+@sio2.on('viewer_connected')
+def handle_viewer_connect(json):
+    print(f"New client: {json['viewer_uuid']}")
+    connectedClient.append(json["viewer_uuid"])
+    print(f"Active clients: {len(connectedClient)}")
+
+@sio2.on("viewer_disconnecting")
+def handle_viewer_disconnect(json):
+    
+    if(json["viewer_uuid"] in connectedClient):
+        connectedClient.remove(json["viewer_uuid"])
+        print(f"Removed client: {json['viewer_uuid']}")
+    
+    if(len(connectedClient) == 0):
+        print("No active clients...")
