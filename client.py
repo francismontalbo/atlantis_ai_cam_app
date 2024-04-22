@@ -45,8 +45,8 @@ fish_cam = initialize_camera(FISH_CAM_INDEX)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-weights = "FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.COCO_V1"
-# weights_fish_model = "weights/fish_model.pth"
+# weights = "FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.COCO_V1"
+weights = "weights/fish_model.pth"
 # weights_plant_model = "weights/plant_model.pth"
 box_score_thresh = 0.9
 model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(
