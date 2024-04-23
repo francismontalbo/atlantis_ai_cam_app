@@ -2,6 +2,7 @@ import base64
 import cv2
 import torchvision.transforms as transforms
 import torchvision
+import torchvision.models.detection as detection_models
 import torch
 import time
 import pygame
@@ -47,18 +48,27 @@ fish_cam = initialize_camera(FISH_CAM_INDEX)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # weights = "FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.COCO_V1"
-weights = torch.load(
-    os.path.join(os.path.dirname(__file__), os.path.abspath("weights/fish_model.pth")),
-    map_location=torch.device("cpu"),
-)
+# weights = torch.load(
+#     os.path.join(os.path.dirname(__file__), os.path.abspath("weights/fish_model.pth")),
+#     map_location=torch.device("cpu"),
+# )
 # weights_plant_model = "weights/plant_model.pth"
+# model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(
+#     pretrained=True, weights=weights, box_score_thresh=box_score_thresh
+# )
+
 box_score_thresh = 0.9
-model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(
-    pretrained=True, weights=weights, box_score_thresh=box_score_thresh
-)
+
+model = detection_models.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=False)
+
+num_classes = 2
+in_features = model.roi_heads.box_predictor.cls_score.in_features
+model.roi_heads.box_predictor = detection_models.faster_rcnn.FastRCNNPredictor(in_features, num_classes, box_score_thresh)
+
+model.load_state_dict(torch.load('fish_model.pth'))
+
 model = model.to(device)
 model.eval()
-
 
 def load_classes(file_path):
     with open(file_path, "r") as file:
