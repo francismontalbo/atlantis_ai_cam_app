@@ -59,16 +59,28 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 box_score_thresh = 0.9
 
-model = detection_models.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=False)
+# FISH MODEL
+fish_model = detection_models.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True)
 
-num_classes = 2
-in_features = model.roi_heads.box_predictor.cls_score.in_features
-model.roi_heads.box_predictor = detection_models.faster_rcnn.FastRCNNPredictor(in_features, num_classes, box_score_thresh)
+fish_num_classes = 2
+fish_in_features = fish_model.roi_heads.box_predictor.cls_score.in_features
+fish_model.roi_heads.box_predictor = detection_models.faster_rcnn.FastRCNNPredictor(fish_in_features, fish_num_classes)
 
-model.load_state_dict(torch.load('fish_model.pth'))
+fish_model.load_state_dict(torch.load('weights/fish_model.pth', map_location=device))
+fish_model = fish_model.to(device)
+fish_model.eval()
 
-model = model.to(device)
-model.eval()
+# PLANT MODEL
+plant_model = detection_models.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True)
+
+plant_num_classes = 2
+plant_in_features = plant_model.roi_heads.box_predictor.cls_score.in_features
+plant_model.roi_heads.box_predictor = detection_models.faster_rcnn.FastRCNNPredictor(plant_in_features, plant_num_classes)
+
+plant_model.load_state_dict(torch.load('weights/fish_model.pth', map_location=device))
+plant_model = plant_model.to(device)
+plant_model.eval()
+
 
 def load_classes(file_path):
     with open(file_path, "r") as file:
@@ -76,8 +88,10 @@ def load_classes(file_path):
     return classes
 
 
-classes_file = "classes.txt"
-CLASSES = load_classes(classes_file)
+fish_classes_file = "fish_classes.txt"
+plant_classes_file = "plant_classes.txt"
+FISH_CLASSES = load_classes(fish_classes_file)
+PLANT_CLASSES = load_classes(plant_classes_file)
 
 
 # Function to perform object detection on frames
@@ -87,17 +101,19 @@ def detect_objects(frame, camera_index: int, sio: socketio.SimpleClient):
     transform = transforms.Compose([transforms.ToTensor()])
     image_tensor = transform(frame).unsqueeze(0).to(device)
     with torch.no_grad():
-        prediction = model(image_tensor)
+        fish_prediction = fish_model(image_tensor)
+        plant_prediction = plant_model(image_tensor)
 
     plants_counted = 0
     fish_counted = 0
 
-    for idx in range(len(prediction[0]["boxes"])):
-        box = prediction[0]["boxes"][idx].cpu().numpy()
-        label = CLASSES[prediction[0]["labels"][idx].item()]
-        score = prediction[0]["scores"][idx].item()
+    for idx in range(len(fish_prediction[0]["boxes"])):
+        box = fish_prediction[0]["boxes"][idx].cpu().numpy()
+        fish_label = FISH_CLASSES[fish_prediction[0]["labels"][idx].item()]
+        plant_label = PLANT_CLASSES[plant_prediction[0]["labels"][idx].item()]
+        score = fish_prediction[0]["scores"][idx].item()
 
-        if score > 0.5:
+        if score > 0.9:
             cv2.rectangle(
                 frame,
                 (int(box[0]), int(box[1])),
@@ -108,19 +124,24 @@ def detect_objects(frame, camera_index: int, sio: socketio.SimpleClient):
             score_formatted = "{:.2f}".format(score * 100)
             cv2.putText(
                 frame,
-                f"{label}: {score_formatted}%",
+                f"{fish_label}: {score_formatted}%",
                 (int(box[0]), int(box[1])),
                 cv2.FONT_HERSHEY_DUPLEX,
                 0.5,
                 (255, 0, 0),
                 1,
             )
-
-            if label == "person":  # label == "sick_plant"
+            
+            current_fish_size = None
+            if plant_label == "unhealthy":  # label == ["healthy", "unhealthy"]
                 plants_counted += 1
 
-            if label == "chair":  # label in ["small_fish", "medium_fish", "big_fish"]
-                fish_counted += 1
+            if fish_label == "mediumfish":  # label in ["small_fish", "medium_fish", "big_fish"]
+                current_fish_size = "mediumfish"
+            elif fish_label == "smallfish":
+                current_fish_size = "smallfish"
+            elif fish_label == "bigfish":
+                current_fish_size = "bigfish"
 
     if camera_index == PLANT_CAM_INDEX:
         overlay = frame.copy()
@@ -142,7 +163,7 @@ def detect_objects(frame, camera_index: int, sio: socketio.SimpleClient):
         cv2.addWeighted(overlay, 0.3, frame, 0.7, 0, frame)
         cv2.putText(
             frame,
-            f"Average Size of Fish: {fish_counted}",
+            f"Average Size of Fish: {current_fish_size}",
             (10, 30),
             cv2.FONT_HERSHEY_DUPLEX,
             0.5,
@@ -213,7 +234,7 @@ with socketio.SimpleClient() as sio:
     sio.connect("http://122.53.28.51:8000")
     # sio.connect("http://127.0.0.1:8000")
     print("Connected, starting feed")
-    video_feed(plant_cam, PLANT_CAM_INDEX, sio)
+    video_feed(plant_cam, FISH_CAM_INDEX, sio)
     print("Feed stopped")
 
 sio2 = sio.client
