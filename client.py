@@ -6,6 +6,7 @@ import torch
 import time
 import pygame
 import socketio
+import os
 
 
 PLANT_CAM_INDEX = 0
@@ -46,7 +47,10 @@ fish_cam = initialize_camera(FISH_CAM_INDEX)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # weights = "FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.COCO_V1"
-weights = "weights/fish_model.pth"
+weights = torch.load(
+    os.path.join(os.path.dirname(__file__), os.path.abspath("weights/fish_model.pth")),
+    map_location=torch.device("cpu"),
+)
 # weights_plant_model = "weights/plant_model.pth"
 box_score_thresh = 0.9
 model = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(
@@ -75,16 +79,14 @@ def detect_objects(frame, camera_index: int, sio: socketio.SimpleClient):
     with torch.no_grad():
         prediction = model(image_tensor)
 
-    if camera_index == PLANT_CAM_INDEX:
-        plant_cam_counter = 0
-    elif camera_index == FISH_CAM_INDEX:
-        fish_cam_counter = 0
+    plants_counted = 0
+    fish_counted = 0
 
-    sound_playing = False
     for idx in range(len(prediction[0]["boxes"])):
         box = prediction[0]["boxes"][idx].cpu().numpy()
         label = CLASSES[prediction[0]["labels"][idx].item()]
         score = prediction[0]["scores"][idx].item()
+
         if score > 0.5:
             cv2.rectangle(
                 frame,
@@ -103,35 +105,12 @@ def detect_objects(frame, camera_index: int, sio: socketio.SimpleClient):
                 (255, 0, 0),
                 1,
             )
-            if label == "person":
-                if camera_index == PLANT_CAM_INDEX:
-                    plant_cam_counter += 1
-                # elif camera_index == FISH_CAM_INDEX:
-                #     fish_cam_counter += 1
-                if not sound_playing:
-                    sound_playing = True
-                    if camera_index == PLANT_CAM_INDEX:
-                        sio.emit(
-                            "play_sound", {"sound_url": "static/fx/sick_plant.mp3"}
-                        )
-                    # elif camera_index == FISH_CAM_INDEX:
-                    #     sio.emit('play_sound', {'sound_url': 'static/fx/sick_fish.mp3'})
-            if label == "chair":
-                if camera_index == FISH_CAM_INDEX:
-                    fish_cam_counter += 1
-                if not sound_playing:
-                    sound_playing = True
-                    sio.emit(
-                        "play_sound", {"sound_url": "static/fx/sick_fish.mp3"}
-                    )
 
-    if not sound_playing:  # If no sound is playing
-        if camera_index == PLANT_CAM_INDEX:
-            sio.emit("stop_sound", {"sound_type": "plant"})
-        if camera_index == FISH_CAM_INDEX:
-            sio.emit("stop_sound", {"sound_type": "fish"})
-        # elif camera_index == FISH_CAM_INDEX:
-        #     sio.emit('stop_sound', {'sound_type': 'fish'})
+            if label == "person":  # label == "sick_plant"
+                plants_counted += 1
+
+            if label == "chair":  # label in ["small_fish", "medium_fish", "big_fish"]
+                fish_counted += 1
 
     if camera_index == PLANT_CAM_INDEX:
         overlay = frame.copy()
@@ -139,7 +118,7 @@ def detect_objects(frame, camera_index: int, sio: socketio.SimpleClient):
         cv2.addWeighted(overlay, 0.3, frame, 0.7, 0, frame)
         cv2.putText(
             frame,
-            f"Sick plants detected: {plant_cam_counter}",
+            f"Sick plants detected: {plants_counted}",
             (10, 30),
             cv2.FONT_HERSHEY_DUPLEX,
             0.5,
@@ -153,7 +132,7 @@ def detect_objects(frame, camera_index: int, sio: socketio.SimpleClient):
         cv2.addWeighted(overlay, 0.3, frame, 0.7, 0, frame)
         cv2.putText(
             frame,
-            f"Average Size of Fish: {fish_cam_counter}",
+            f"Average Size of Fish: {fish_counted}",
             (10, 30),
             cv2.FONT_HERSHEY_DUPLEX,
             0.5,
@@ -162,10 +141,18 @@ def detect_objects(frame, camera_index: int, sio: socketio.SimpleClient):
             cv2.LINE_AA,
         )
 
+    if plants_counted > plant_cam_counter:
+        sio.emit("play_sound", {"sound_url": "static/fx/sick_plant.mp3"})
+
+    if fish_counted > fish_cam_counter:
+        sio.emit("play_sound", {"sound_url": "static/fx/sick_fish.mp3"})
+
+    plant_cam_counter = plants_counted
+    fish_cam_counter = fish_counted
+
     return frame
 
 
-# Function to generate video feed for a specific camera
 def video_feed(camera: cv2.VideoCapture, camera_index: int, sio: socketio.SimpleClient):
     start_time = time.time()
     frame_count = 0
@@ -176,6 +163,7 @@ def video_feed(camera: cv2.VideoCapture, camera_index: int, sio: socketio.Simple
         if not success:
             break
 
+        # Perform object detection
         frame = detect_objects(frame, camera_index, sio)
         frame_count += 1
         elapsed_time = time.time() - start_time
@@ -195,18 +183,25 @@ def video_feed(camera: cv2.VideoCapture, camera_index: int, sio: socketio.Simple
                 cv2.LINE_AA,
             )
 
-        ret, buffer = cv2.imencode(".jpg", frame)
-        frame = buffer.tobytes()
-        sio.emit("video_feed", {
-            "frame": base64.b64encode(frame).decode("utf-8"),
-            "camera_index": camera_index,
-        })
+        # Apply compression
+        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 50]  # adjust quality as needed
+        _, compressed_frame = cv2.imencode(".jpg", frame, encode_param)
 
+        # Convert to bytes and send to server
+        frame_bytes = compressed_frame.tobytes()
+        sio.emit(
+            "video_feed",
+            {
+                "frame": base64.b64encode(frame_bytes).decode("utf-8"),
+                "camera_index": camera_index,
+            },
+        )
 
 
 with socketio.SimpleClient() as sio:
     print("Connecting to server")
     sio.connect("http://122.53.28.51:8000")
+    # sio.connect("http://127.0.0.1:8000")
     print("Connected, starting feed")
     video_feed(plant_cam, PLANT_CAM_INDEX, sio)
     print("Feed stopped")
@@ -214,18 +209,20 @@ with socketio.SimpleClient() as sio:
 sio2 = sio.client
 sio2.connect("http://122.53.28.51:8200")
 
-@sio2.on('viewer_connected')
+
+@sio2.on("viewer_connected")
 def handle_viewer_connect(json):
     print(f"New client: {json['viewer_uuid']}")
     connectedClient.append(json["viewer_uuid"])
     print(f"Active clients: {len(connectedClient)}")
 
+
 @sio2.on("viewer_disconnecting")
 def handle_viewer_disconnect(json):
-    
-    if(json["viewer_uuid"] in connectedClient):
+
+    if json["viewer_uuid"] in connectedClient:
         connectedClient.remove(json["viewer_uuid"])
         print(f"Removed client: {json['viewer_uuid']}")
-    
-    if(len(connectedClient) == 0):
+
+    if len(connectedClient) == 0:
         print("No active clients...")
