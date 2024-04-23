@@ -106,7 +106,7 @@ def detect_objects(frame, camera_index: int, sio: socketio.SimpleClient):
 
     plants_counted = 0
     fish_counted = 0
-
+    current_fish_size = None
     for idx in range(len(fish_prediction[0]["boxes"])):
         box = fish_prediction[0]["boxes"][idx].cpu().numpy()
         fish_label = FISH_CLASSES[fish_prediction[0]["labels"][idx].item()]
@@ -131,12 +131,12 @@ def detect_objects(frame, camera_index: int, sio: socketio.SimpleClient):
                 (255, 0, 0),
                 1,
             )
-            
-            current_fish_size = None
-            if plant_label == "unhealthy":  # label == ["healthy", "unhealthy"]
-                plants_counted += 1
 
-            if fish_label == "mediumfish":  # label in ["small_fish", "medium_fish", "big_fish"]
+            # label == ["healthy", "unhealthy"]
+            if plant_label == "unhealthy":  
+                plants_counted += 1
+            # label in ["small_fish", "medium_fish", "big_fish"]
+            if fish_label == "mediumfish":  
                 current_fish_size = "mediumfish"
             elif fish_label == "smallfish":
                 current_fish_size = "smallfish"
