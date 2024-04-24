@@ -1,5 +1,6 @@
 import base64
 import cv2
+from atlantis_edge.actuator_automation.ai_command_module import Observable
 import torchvision.transforms as transforms
 import torchvision
 import torchvision.models.detection as detection_models
@@ -9,6 +10,28 @@ import pygame
 import socketio
 import os
 
+# observables for fish size 
+class AIFishSize(Observable):
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(AIFishSize, cls).__new__(cls)
+        return cls.instance
+            
+    def set_fish_size(self, fish_size: str):
+        self.fish_size = fish_size
+        self.notify_observers()
+
+# observables for future use when the ai needs to send commands to turn on/off actuators
+class AICommand(Observable):
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(AICommand, cls).__new__(cls)
+        return cls.instance
+            
+    def send_command(self, actuator_name: str, duration: float):
+        self.actuator_name = actuator_name
+        self.duration = duration
+        self.notify_observers()
 
 PLANT_CAM_INDEX = 0
 FISH_CAM_INDEX = 1
@@ -31,6 +54,9 @@ last_played_time_plant = time.time()
 last_played_time_fish = time.time()
 connectedClient = []
 
+aiFishSize = AIFishSize()
+aiCommand = AICommand()
+_current_fish_size = ""
 
 def initialize_camera(
     index, frame_rate=FRAME_RATE, frame_width=FRAME_WIDTH, frame_height=FRAME_HEIGHT
@@ -142,6 +168,9 @@ def detect_objects(frame, camera_index: int, sio: socketio.SimpleClient):
                 current_fish_size = "smallfish"
             elif fish_label == "bigfish":
                 current_fish_size = "bigfish"
+                
+            aiFishSize.set_fish_size(current_fish_size)
+            _current_fish_size = current_fish_size
 
     if camera_index == PLANT_CAM_INDEX:
         overlay = frame.copy()
@@ -228,6 +257,8 @@ def video_feed(camera: cv2.VideoCapture, camera_index: int, sio: socketio.Simple
             },
         )
 
+def get_current_fish_size():
+    return _current_fish_size
 
 with socketio.SimpleClient() as sio:
     print("Connecting to server")
